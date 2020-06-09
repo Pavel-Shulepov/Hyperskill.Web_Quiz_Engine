@@ -1,7 +1,5 @@
-package domain;
+package engine.domain;
 
-import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonProperty;
 
 public final class Quiz {
     private final String title;
@@ -9,10 +7,21 @@ public final class Quiz {
     private final String[] options;
     private final int answerIndex;
 
-    @JsonCreator
-    public Quiz(@JsonProperty(value = "title") String title,
-                @JsonProperty(value = "text") String text,
-                @JsonProperty(value = "options") String[] options,
+    public String getTitle() {
+        return title;
+    }
+
+    public String getText() {
+        return text;
+    }
+
+    public String[] getOptions() {
+        return options;
+    }
+
+    public Quiz(String title,
+                String text,
+                String[] options,
                 int answerIndex) {
         this.answerIndex = answerIndex;
         this.title = title;

@@ -1,7 +1,7 @@
-package controllers;
+package engine.controllers;
 
-import domain.AnswerStatus;
-import domain.Quiz;
+import engine.domain.AnswerStatus;
+import engine.domain.Quiz;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -16,8 +16,8 @@ public class QuizController {
                 2);
     }
 
-    @RequestMapping(method = RequestMethod.POST, path = "/quiz/{answer}")
-    public AnswerStatus answerQuiz(@PathVariable int answer) {
+    @RequestMapping(method = RequestMethod.POST, path = "/quiz")
+    public AnswerStatus answerQuiz(@RequestParam("answer") int answer) {
         if (answer == 2) {
             return new AnswerStatus(true, "Congratulations, you're right!");
         } else {
