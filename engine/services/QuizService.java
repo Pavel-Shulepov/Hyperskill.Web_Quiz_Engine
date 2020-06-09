@@ -1,5 +1,6 @@
 package engine.services;
 
+import engine.domain.Answer;
 import engine.domain.Quiz;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +26,13 @@ public class QuizService {
         return dataBase.values();
     }
 
-    public boolean solve(int id, int answer) {
-        return dataBase.get(id).getAnswer() == answer;
+    public boolean solve(int id, Answer answer) {
+        var a = dataBase.get(id).getAnswer();
+        if (a == null) return true;
+        var b = answer.getAnswer();
+        Arrays.sort(a);
+        Arrays.sort(b);
+        return Arrays.equals(a, b);
     }
 
 }

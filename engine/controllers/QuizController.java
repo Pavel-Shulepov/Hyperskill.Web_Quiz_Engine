@@ -1,16 +1,20 @@
 package engine.controllers;
 
+import engine.domain.Answer;
 import engine.domain.AnswerStatus;
 import engine.domain.Quiz;
 import engine.services.QuizService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.server.ResponseStatusException;
 
 import java.util.Collection;
 
 @RestController
 @RequestMapping("/api")
+@Validated
 public class QuizController {
 
     private final QuizService quizService;
@@ -31,16 +35,20 @@ public class QuizController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/quizzes/{id}/solve")
-    public AnswerStatus answerQuiz(@RequestParam("answer") int answer, @PathVariable("id") int id) {
+    public ResponseEntity<AnswerStatus> answerQuiz(@RequestBody Answer answer,
+                                                   @PathVariable("id") int id) {
         if (quizService.solve(id, answer)) {
-            return new AnswerStatus(true, "Congratulations, you're right!");
+            return ResponseEntity.ok(new AnswerStatus(true, "Congratulations, you're right!"));
         } else {
-            return new AnswerStatus(false, "Wrong answer! Please, try again.");
+            return ResponseEntity.ok(new AnswerStatus(false, "Wrong answer! Please, try again."));
         }
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/quizzes")
     public ResponseEntity<Quiz> addQuiz(@RequestBody Quiz quiz) {
+        if (quiz.getOptions() == null || quiz.getOptions().length < 2) {
+            throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверное количество ответов");
+        }
         return ResponseEntity.ok(quizService.add(quiz));
     }
 
