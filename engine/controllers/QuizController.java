@@ -3,18 +3,19 @@ package engine.controllers;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import engine.domain.Answer;
 import engine.domain.AnswerStatus;
+import engine.domain.Complete;
 import engine.domain.Quiz;
 import engine.json.QuizBuilderDeserializer;
 import engine.services.QuizService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.server.ResponseStatusException;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collection;
 
 @RestController
 @RequestMapping("/api")
@@ -40,8 +41,9 @@ public class QuizController {
 
     @RequestMapping(method = RequestMethod.POST, path = "/quizzes/{id}/solve")
     public ResponseEntity<AnswerStatus> answerQuiz(@RequestBody Answer answer,
-                                                   @PathVariable("id") int id) {
-        if (quizService.solve(id, answer)) {
+                                                   @PathVariable("id") int id,
+                                                   HttpServletRequest request) {
+        if (quizService.solve(id, answer, request.getUserPrincipal().getName())) {
             return ResponseEntity.ok(new AnswerStatus(true, "Congratulations, you're right!"));
         } else {
             return ResponseEntity.ok(new AnswerStatus(false, "Wrong answer! Please, try again."));
@@ -61,8 +63,16 @@ public class QuizController {
     }
 
     @RequestMapping(method = RequestMethod.GET, path = "/quizzes")
-    public ResponseEntity<Collection<Quiz>> addQuiz() {
-        return ResponseEntity.ok(quizService.all());
+    public ResponseEntity<Page<Quiz>> allQuiz(@RequestParam(name = "page") int page) {
+        logger.debug("{}", page);
+        return ResponseEntity.ok(quizService.all(page));
+    }
+
+    @RequestMapping(method = RequestMethod.GET, path = "/quizzes/completed")
+    public ResponseEntity<Page<Complete>> allCompleteByUser(@RequestParam(name = "page") int page,
+                                                            HttpServletRequest request) {
+        logger.debug("{}", page);
+        return ResponseEntity.ok(quizService.completes(request.getUserPrincipal().getName(), page));
     }
 
     @RequestMapping(method = RequestMethod.DELETE, path = "/quizzes/{id}")
