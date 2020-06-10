@@ -31,6 +31,9 @@ public class Quiz {
     @JoinColumn(name = "id_quiz")
     private List<AnswerEntity> answer;
 
+    @Column(name = "user_email")
+    private String userEmail;
+
     public String getTitle() {
         return title;
     }
@@ -71,6 +74,14 @@ public class Quiz {
         this.answer = answer;
     }
 
+    public String getUserEmail() {
+        return userEmail;
+    }
+
+    public void setUserEmail(String userEmail) {
+        this.userEmail = userEmail;
+    }
+
     public Quiz() {
     }
 
@@ -82,6 +93,18 @@ public class Quiz {
         this.title = title;
         this.text = text;
         this.options = options;
+    }
+
+    @Override
+    public String toString() {
+        return "Quiz{" +
+                "id=" + id +
+                ", title='" + title + '\'' +
+                ", text='" + text + '\'' +
+                ", options=" + options.size() +
+                ", answer=" + answer.size() +
+                ", user=" + userEmail +
+                '}';
     }
 
     public static class Builder {

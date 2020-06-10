@@ -50,4 +50,8 @@ public class QuizService {
         return Arrays.equals(a, b);
     }
 
+    public void delete(int id) {
+        quizRepo.delete(get(id));
+    }
+
 }
