@@ -1,19 +1,35 @@
 package engine.domain;
 
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+import engine.json.QuizSerializer;
 
-public final class Quiz {
-    private int id;
+import javax.persistence.*;
+import java.util.*;
+import java.util.function.BiConsumer;
+import java.util.function.Consumer;
 
+@Entity
+@Table(name = "quiz")
+@JsonSerialize(using = QuizSerializer.class)
+public class Quiz {
+    @Id
+    @Column(name = "id")
+    @GeneratedValue(strategy = GenerationType.SEQUENCE)
+    private Integer id;
+
+    @Column(name = "title")
     private String title;
 
+    @Column(name = "text")
     private String text;
 
-    private String[] options;
-    @JsonIgnore
-    private int[] answer;
+    @OneToMany()
+    private List<Option> options;
+
+    @OneToMany()
+    @JoinColumn(name = "id_quiz")
+    private List<AnswerEntity> answer;
 
     public String getTitle() {
         return title;
@@ -23,50 +39,119 @@ public final class Quiz {
         return text;
     }
 
-    public String[] getOptions() {
+    public List<Option> getOptions() {
         return options;
     }
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
-    @JsonProperty("title")
     public void setTitle(String title) {
         this.title = title;
     }
 
-    @JsonProperty("text")
     public void setText(String text) {
         this.text = text;
     }
 
-    @JsonProperty("options")
-    public void setOptions(String[] options) {
+    public void setOptions(List<Option> options) {
         this.options = options;
     }
 
-    public void setId(int id) {
+    public void setId(Integer id) {
         this.id = id;
     }
 
-    @JsonIgnore
-    public int[] getAnswer() {
+    public List<AnswerEntity> getAnswer() {
         return answer;
     }
 
-    @JsonProperty("answer")
-    public void setAnswer(int[] answer) {
+    public void setAnswer(List<AnswerEntity> answer) {
         this.answer = answer;
+    }
+
+    public Quiz() {
     }
 
     public Quiz(String title,
                 String text,
-                String[] options,
-                int[] answer) {
-        this.answer = answer == null ? new int[]{} : answer;
+                List<Option> options,
+                List<AnswerEntity> answer) {
+        this.answer = answer == null ? new ArrayList<>() : answer;
         this.title = title;
         this.text = text;
         this.options = options;
     }
+
+    public static class Builder {
+
+        private Map<String, Consumer<Quiz>> setters = new HashMap<>();
+
+        private String title;
+        private List<Option> options;
+        private String text;
+        private List<AnswerEntity> answer;
+
+        public Builder() {
+        }
+
+        public List<Option> getOptions() {
+            if (options == null) {
+                options = new ArrayList<>();
+            }
+            return options;
+        }
+
+        public List<AnswerEntity> getAnswer() {
+            if (options == null) {
+                options = new ArrayList<>();
+            }
+            return answer;
+        }
+
+        public Builder withTitle(String title) {
+            return withProperty("title", Quiz::setTitle, title);
+        }
+
+        public Builder withText(String text) {
+            return withProperty("text", Quiz::setText, text);
+        }
+
+        public Builder addOptions(Option... options) {
+            return this.addAllOptions(Arrays.asList(options));
+        }
+
+        public Builder addAllOptions(Collection<? extends Option> options) {
+            this.getOptions().addAll(options);
+            return this;
+        }
+
+        public Builder addAnswers(AnswerEntity... answers) {
+            return this.addAllAnswers(Arrays.asList(answers));
+        }
+
+        public Builder addAllAnswers(Collection<? extends AnswerEntity> answers) {
+            this.getAnswer().addAll(answers);
+            return this;
+        }
+
+        private <T> Builder withProperty(String propertyName, BiConsumer<Quiz, T> function, T value) {
+            setters.put(propertyName, task -> function.accept(task, value));
+            return this;
+        }
+
+        public Quiz build() {
+            Quiz quiz = new Quiz(title, text, options, answer);
+            return apply(quiz);
+        }
+
+        private Quiz apply(Quiz quiz) {
+            setters.values().forEach(consumer -> consumer.accept(quiz));
+            return quiz;
+        }
+
+    }
 }
+
+

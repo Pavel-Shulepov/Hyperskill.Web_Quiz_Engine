@@ -1,8 +1,10 @@
 package engine.controllers;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import engine.domain.Answer;
 import engine.domain.AnswerStatus;
 import engine.domain.Quiz;
+import engine.json.QuizBuilderDeserializer;
 import engine.services.QuizService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -45,8 +47,9 @@ public class QuizController {
     }
 
     @RequestMapping(method = RequestMethod.POST, path = "/quizzes")
-    public ResponseEntity<Quiz> addQuiz(@RequestBody Quiz quiz) {
-        if (quiz.getOptions() == null || quiz.getOptions().length < 2) {
+    public ResponseEntity<Quiz> addQuiz(@JsonDeserialize(using = QuizBuilderDeserializer.class) @RequestBody Quiz.Builder quizBuilder) {
+        Quiz quiz = quizBuilder.build();
+        if (quiz.getOptions() == null || quiz.getOptions().size() < 2) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "Неверное количество ответов");
         }
         return ResponseEntity.ok(quizService.add(quiz));
