@@ -104,8 +104,8 @@ public class Quiz {
         }
 
         public List<AnswerEntity> getAnswer() {
-            if (options == null) {
-                options = new ArrayList<>();
+            if (answer == null) {
+                answer = new ArrayList<>();
             }
             return answer;
         }
